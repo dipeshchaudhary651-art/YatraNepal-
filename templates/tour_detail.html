@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tour.name }} - YatraNepal{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4" data-aos="fade-up">
+                <img src="{{ tour.image_url or 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
+                     class="card-img-top" alt="{{ tour.name }}" style="height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <h1 class="card-title">{{ tour.name }}</h1>
+                    <p class="text-muted">
+                        <i class="fas fa-clock me-2"></i>{{ tour.duration }}
+                    </p>
+                    <div class="rating mb-3">
+                        {% for i in range(5) %}
+                            <i class="fas fa-star{% if i < tour.rating|int %}{% else %}-o{% endif %}"></i>
+                        {% endfor %}
+                        <span class="ms-2">{{ tour.rating }}/5</span>
+                    </div>
+                    <p class="card-text">{{ tour.description }}</p>
+                    
+                    {% if tour.destinations %}
+                    <h5>Destinations</h5>
+                    <div class="row">
+                        {% for destination in tour.destinations.split(',') %}
+                        <div class="col-md-6 mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>{{ destination.strip() }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if tour.included_services %}
+                    <h5 class="mt-4">Included Services</h5>
+                    <div class="row">
+                        {% for service in tour.included_services.split(',') %}
+                        <div class="col-md-6 mb-2">
+                            <i class="fas fa-check text-success me-2"></i>{{ service.strip() }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Reviews Section -->
+            <div class="card" data-aos="fade-up">
+                <div class="card-body">
+                    <h5>Guest Reviews</h5>
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-item border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6>{{ review.user.username }}</h6>
+                                    <div class="rating">
+                                        {% for i in range(5) %}
+                                            <i class="fas fa-star{% if i < review.rating %}{% else %}-o{% endif %} text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No reviews yet.</p>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated %}
+                    <form method="POST" action="{{ url_for('add_review') }}" class="mt-4">
+                        <input type="hidden" name="review_type" value="tour">
+                        <input type="hidden" name="item_id" value="{{ tour.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Rating</label>
+                            <select class="form-select" name="rating" required>
+                                <option value="">Select rating</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="2">2 Stars</option>
+                                <option value="1">1 Star</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comment</label>
+                            <textarea class="form-control" name="comment" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 100px;">
+                <div class="card-body">
+                    <h5>Book This Tour</h5>
+                    <div class="price mb-3">
+                        <span class="price-display" data-currency="NPR">NPR {{ "%.0f"|format(tour.price_nrp) }}</span>
+                        <span class="price-display" data-currency="USD" style="display: none;">${{ "%.0f"|format(tour.price_usd) }}</span>
+                    </div>
+                    
+                    {% if current_user.is_authenticated %}
+                        {% if existing_booking %}
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Booking Status:</strong><br>
+                                {% if existing_booking.payment_status == 'completed' %}
+                                    <span class="badge bg-success">Active Booking</span><br>
+                                    <small class="text-muted">You have an active booking for this tour.</small>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending Payment</span><br>
+                                    <small class="text-muted">You have a pending booking. Please complete payment.</small>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                <a href="{{ url_for('my_bookings') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-calendar-alt me-2"></i>View My Bookings
+                                </a>
+                            </div>
+                        {% else %}
+                    <a href="{{ url_for('book', type='tour', item_id=tour.id) }}" class="btn btn-primary btn-lg w-100">
+                        Book Now
+                    </a>
+                        {% endif %}
+                    {% else %}
+                    <p class="text-muted">Please sign in to book this tour</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Sign In</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

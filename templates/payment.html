@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - YatraNepal{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg" data-aos="fade-up">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="card-title">Complete Your Payment</h2>
+                        <p class="text-muted">Only Cash on Arrival is accepted</p>
+                    </div>
+                    <!-- Booking Summary -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">Booking Summary</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Booking ID:</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="fw-bold">#{{ booking.id }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Type:</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="text-capitalize">{{ booking.booking_type }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Check-in:</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span>{{ booking.check_in_date.strftime('%B %d, %Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Check-out:</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span>{{ booking.check_out_date.strftime('%B %d, %Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span>Guests:</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span>{{ booking.guests }}</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Total Amount:</strong>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong>{% if booking.currency == 'NPR' %}NPR{% else %}${% endif %} {{ "%.0f"|format(booking.total_amount) }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Only Cash Payment Form -->
+                    <div id="cashForm" class="mb-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            You have chosen to pay in cash upon arrival. Your booking will be confirmed immediately.
+                        </div>
+                        <form method="POST">
+                            <input type="hidden" name="payment_method" value="cash">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-check me-2"></i>Confirm Cash Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('my_bookings') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- No payment gateway scripts needed -->
+{% endblock %}

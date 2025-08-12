@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Edit Hotel{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Hotel</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Hotel Name</label>
+            <input type="text" class="form-control" name="name" value="{{ hotel.name }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" name="location" value="{{ hotel.location }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" required>{{ hotel.description }}</textarea>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label">Price (NPR)</label>
+                <input type="number" class="form-control" name="price_nrp" value="{{ hotel.price_nrp }}" required>
+            </div>
+            <div class="col">
+                <label class="form-label">Price (USD)</label>
+                <input type="number" class="form-control" name="price_usd" value="{{ hotel.price_usd }}" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Image</label>
+            <input type="file" class="form-control" name="image_file" accept="image/*">
+            {% if hotel.image_url %}
+                <small>Current image: <a href="{{ hotel.image_url }}" target="_blank">View</a></small>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Amenities</label>
+            <input type="text" class="form-control" name="amenities" value="{{ hotel.amenities }}">
+        </div>
+
+        <button type="submit" class="btn btn-success">Update Hotel</button>
+        <a href="{{ url_for('admin_hotel_list') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

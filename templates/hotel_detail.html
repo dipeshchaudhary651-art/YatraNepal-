@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hotel.name }} - YatraNepal{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <!-- Hotel Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('hotels') }}">Hotels</a></li>
+                    <li class="breadcrumb-item active">{{ hotel.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Hotel Images and Info -->
+        <div class="col-lg-8">
+            <div class="card mb-4" data-aos="fade-up">
+                <img src="{{ hotel.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
+                     class="card-img-top" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="card-title">{{ hotel.name }}</h1>
+                            <p class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ hotel.location }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating mb-2">
+                                {% for i in range(5) %}
+                                    <i class="fas fa-star{% if i < hotel.rating|int %}{% else %}-o{% endif %}"></i>
+                                {% endfor %}
+                                <span class="ms-2">{{ hotel.rating }}/5</span>
+                            </div>
+                            <div class="price">
+                                <span class="price-display" data-currency="NPR">
+                                    <strong>NPR {{ "%.0f"|format(hotel.price_nrp) }}</strong> / night
+                                </span>
+                                <span class="price-display" data-currency="USD" style="display: none;">
+                                    <strong>${{ "%.0f"|format(hotel.price_usd) }}</strong> / night
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="currency-selector mb-4">
+                        <span class="me-3 fw-bold">Currency:</span>
+                        <button class="currency-btn active" data-currency="NPR">NPR</button>
+                        <button class="currency-btn" data-currency="USD">USD</button>
+                    </div>
+                    
+                    <h5>Description</h5>
+                    <p class="card-text">{{ hotel.description }}</p>
+                    
+                    {% if hotel.amenities %}
+                    <h5 class="mt-4">Amenities</h5>
+                    <div class="row">
+                        {% for amenity in hotel.amenities.split(',') %}
+                        <div class="col-md-6 mb-2">
+                            <i class="fas fa-check text-success me-2"></i>{{ amenity.strip() }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Reviews Section -->
+            <div class="card" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-body">
+                    <h5 class="card-title">Guest Reviews</h5>
+                    
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-item border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ review.user.username }}</h6>
+                                    <div class="rating mb-2">
+                                        {% for i in range(5) %}
+                                            <i class="fas fa-star{% if i < review.rating %}{% else %}-o{% endif %} text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No reviews yet. Be the first to review this hotel!</p>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated %}
+                    <!-- Add Review Form -->
+                    <div class="mt-4">
+                        <h6>Write a Review</h6>
+                        <form method="POST" action="{{ url_for('add_review') }}">
+                            <input type="hidden" name="review_type" value="hotel">
+                            <input type="hidden" name="item_id" value="{{ hotel.id }}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="rating-input">
+                                    {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                                    <label for="star{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Comment</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3" required 
+                                          placeholder="Share your experience..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="mt-4">
+                        <p class="text-muted">
+                            <a href="{{ url_for('login') }}" class="text-primary">Sign in</a> to write a review.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 100px;" data-aos="fade-left">
+                <div class="card-body">
+                    <h5 class="card-title">Book This Hotel</h5>
+                    
+                    {% if current_user.is_authenticated %}
+                        {% if existing_booking %}
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Booking Status:</strong><br>
+                                {% if existing_booking.payment_status == 'completed' %}
+                                    <span class="badge bg-success">Active Booking</span><br>
+                                    <small class="text-muted">You have an active booking for this hotel.</small>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending Payment</span><br>
+                                    <small class="text-muted">You have a pending booking. Please complete payment.</small>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                <a href="{{ url_for('my_bookings') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-calendar-alt me-2"></i>View My Bookings
+                                </a>
+                            </div>
+                        {% else %}
+                    <form method="GET" action="{{ url_for('book', type='hotel', item_id=hotel.id) }}">
+                        <div class="mb-3">
+                            <label for="check_in" class="form-label">Check-in Date</label>
+                            <input type="date" class="form-control" id="check_in" name="check_in" required 
+                                   min="{{ (moment().add(1, 'days')).format('YYYY-MM-DD') }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="check_out" class="form-label">Check-out Date</label>
+                            <input type="date" class="form-control" id="check_out" name="check_out" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="guests" class="form-label">Number of Guests</label>
+                            <select class="form-select" id="guests" name="guests" required>
+                                <option value="1">1 Guest</option>
+                                <option value="2">2 Guests</option>
+                                <option value="3">3 Guests</option>
+                                <option value="4">4 Guests</option>
+                                <option value="5">5+ Guests</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Currency</label>
+                            <div class="currency-selector">
+                                <button type="button" class="currency-btn active" data-currency="NPR">NPR</button>
+                                <button type="button" class="currency-btn" data-currency="USD">USD</button>
+                            </div>
+                        </div>
+                        
+                        <div class="price-summary mb-3 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between">
+                                <span>Price per night:</span>
+                                <span class="price-display" data-currency="NPR">NPR {{ "%.0f"|format(hotel.price_nrp) }}</span>
+                                <span class="price-display" data-currency="USD" style="display: none;">${{ "%.0f"|format(hotel.price_usd) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-check me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </form>
+                        {% endif %}
+                    {% else %}
+                    <div class="text-center">
+                        <p class="text-muted mb-3">Please sign in to book this hotel</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary me-2">Sign In</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Sign Up</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 5px;
+    }
+    
+    .rating-input input[type="radio"] {
+        display: none;
+    }
+    
+    .star-label {
+        cursor: pointer;
+        color: #ddd;
+        font-size: 1.5rem;
+        transition: color 0.3s ease;
+    }
+    
+    .star-label:hover,
+    .star-label:hover ~ .star-label,
+    .rating-input input[type="radio"]:checked ~ .star-label {
+        color: #ffc107;
+    }
+    
+    .review-item:last-child {
+        border-bottom: none !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Date validation
+        const checkIn = document.getElementById('check_in');
+        const checkOut = document.getElementById('check_out');
+        
+        if (checkIn && checkOut) {
+            checkIn.addEventListener('change', function() {
+                const checkInDate = new Date(this.value);
+                const nextDay = new Date(checkInDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                checkOut.min = nextDay.toISOString().split('T')[0];
+                
+                if (checkOut.value && new Date(checkOut.value) <= checkInDate) {
+                    checkOut.value = nextDay.toISOString().split('T')[0];
+                }
+            });
+            
+            checkOut.addEventListener('change', function() {
+                const checkOutDate = new Date(this.value);
+                const checkInDate = new Date(checkIn.value);
+                
+                if (checkOutDate <= checkInDate) {
+                    alert('Check-out date must be after check-in date!');
+                    this.value = '';
+                }
+            });
+        }
+        
+        // Currency switching
+        const currencyBtns = document.querySelectorAll('.currency-btn');
+        
+        currencyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                currencyBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const currency = this.dataset.currency;
+                const priceElements = document.querySelectorAll(`[data-currency="${currency}"]`);
+                
+                document.querySelectorAll('.price-display').forEach(el => el.style.display = 'none');
+                priceElements.forEach(el => el.style.display = 'block');
+            });
+        });
+    });
+</script>
+{% endblock %} 

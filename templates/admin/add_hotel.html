@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Add Hotel - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-content">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="admin-card" data-aos="fade-up">
+                    <div class="card-header">
+                        <h2 class="mb-0"><i class="fas fa-plus admin-icon"></i>Add New Hotel</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">Add a new hotel to your platform</p>
+                        
+                        <form method="POST" enctype="multipart/form-data" class="admin-form">
+                      
+                        <div class="mb-3">
+                          <label for="name" class="form-label">Hotel Name</label>
+                          <input type="text" class="form-control" name="name" required>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="description" class="form-label">Description</label>
+                          <textarea class="form-control" name="description" rows="3" required></textarea>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="location" class="form-label">Location</label>
+                          <input type="text" class="form-control" name="location" required>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="price_nrp" class="form-label">Price (NPR)</label>
+                          <input type="number" class="form-control" name="price_nrp" step="0.01" required>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="price_usd" class="form-label">Price (USD)</label>
+                          <input type="number" class="form-control" name="price_usd" step="0.01" required>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="amenities" class="form-label">Amenities (comma-separated)</label>
+                          <input type="text" class="form-control" name="amenities" required>
+                        </div>
+                      
+                        <div class="mb-3">
+                          <label for="image" class="form-label">Hotel Image</label>
+                          <input type="file" class="form-control" name="image" accept="image/*" required>
+                        </div>
+                      
+                        <button type="submit" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Hotel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addHotelForm');
+        
+        form.addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const location = document.getElementById('location').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const priceNrp = parseFloat(document.getElementById('price_nrp').value);
+            const priceUsd = parseFloat(document.getElementById('price_usd').value);
+            
+            if (!name || !location || !description) {
+                e.preventDefault();
+                alert('Please fill in all required fields!');
+                return false;
+            }
+            
+            if (priceNrp < 0 || priceUsd < 0) {
+                e.preventDefault();
+                alert('Prices cannot be negative!');
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding Hotel...';
+        });
+    });
+</script>
+{% endblock %} 

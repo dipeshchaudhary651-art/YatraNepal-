@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - YatraNepal{% endblock %}
+
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="section-title" data-aos="fade-up">My Bookings</h1>
+            <p class="text-center text-muted mb-5" data-aos="fade-up" data-aos-delay="100">
+                Track all your bookings and their status
+            </p>
+        </div>
+    </div>
+    
+    {% if bookings %}
+    <div class="row">
+        {% for booking in bookings %}
+        <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title">Booking #{{ booking.id }}</h5>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-{{ 'bed' if booking.booking_type == 'hotel' else 'map-marked-alt' }} me-2"></i>
+                                {{ booking.booking_type.title() }} Booking
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ 'success' if booking.payment_status == 'completed' else 'warning' }} mb-2">
+                                {{ booking.payment_status.title() }}
+                            </span><br>
+                            <span class="badge bg-{{ 'primary' if booking.booking_status == 'confirmed' else 'secondary' }}">
+                                {{ booking.booking_status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Check-in:</small><br>
+                            <strong>{{ booking.check_in_date.strftime('%B %d, %Y') }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Check-out:</small><br>
+                            <strong>{{ booking.check_out_date.strftime('%B %d, %Y') }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Guests:</small><br>
+                            <strong>{{ booking.guests }} {{ 'Guest' if booking.guests == 1 else 'Guests' }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Total Amount:</small><br>
+                            <strong>{{ booking.currency }} {{ "%.0f"|format(booking.total_amount) }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <small class="text-muted">Booked on:</small><br>
+                            <strong>{{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {% if booking.payment_status == 'pending' %}
+                        <a href="{{ url_for('payment') }}" class="btn btn-primary">
+                            <i class="fas fa-credit-card me-2"></i>Complete Payment
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#bookingModal{{ booking.id }}">
+                            <i class="fas fa-eye me-2"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div class="modal fade" id="bookingModal{{ booking.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Booking Details #{{ booking.id }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Booking Info</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>ID:</strong></td><td>#{{ booking.id }}</td></tr>
+                                    <tr><td><strong>Type:</strong></td><td>{{ booking.booking_type.title() }}</td></tr>
+                                    <tr><td><strong>Status:</strong></td>
+                                        <td><span class="badge bg-{{ 'primary' if booking.booking_status == 'confirmed' else 'secondary' }}">{{ booking.booking_status.title() }}</span></td></tr>
+                                    <tr><td><strong>Payment:</strong></td>
+                                        <td><span class="badge bg-{{ 'success' if booking.payment_status == 'completed' else 'warning' }}">{{ booking.payment_status.title() }}</span></td></tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Travel Info</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>Check-in:</strong></td><td>{{ booking.check_in_date.strftime('%B %d, %Y') }}</td></tr>
+                                    <tr><td><strong>Check-out:</strong></td><td>{{ booking.check_out_date.strftime('%B %d, %Y') }}</td></tr>
+                                    <tr><td><strong>Guests:</strong></td><td>{{ booking.guests }} {{ 'Guest' if booking.guests == 1 else 'Guests' }}</td></tr>
+                                    <tr><td><strong>Total:</strong></td><td>{{ booking.currency }} {{ "%.0f"|format(booking.total_amount) }}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Item Details -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6>Item Details</h6>
+                                {% if booking.item_details %}
+                                    {% if booking.booking_type == 'hotel' %}
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <img src="{{ booking.item_details.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                                                             class="img-fluid rounded" alt="{{ booking.item_details.name }}">
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <h6>{{ booking.item_details.name }}</h6>
+                                                        <p class="text-muted mb-2">
+                                                            <i class="fas fa-map-marker-alt me-2"></i>{{ booking.item_details.location }}
+                                                        </p>
+                                                        <p class="mb-2">{{ booking.item_details.description[:200] }}...</p>
+                                                        {% if booking.item_details.amenities %}
+                                                        <div class="mb-2">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-concierge-bell me-2"></i>
+                                                                {{ booking.item_details.amenities.split(',')[:3]|join(', ') }}
+                                                                {% if booking.item_details.amenities.split(',')|length > 3 %}...{% endif %}
+                                                            </small>
+                                                        </div>
+                                                        {% endif %}
+                                                        <div class="rating">
+                                                            {% for i in range(5) %}
+                                                                <i class="fas fa-star{% if i < booking.item_details.rating|int %}{% else %}-o{% endif %}"></i>
+                                                            {% endfor %}
+                                                            <span class="ms-2">{{ booking.item_details.rating }}/5</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <img src="{{ booking.item_details.image_url or 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                                                             class="img-fluid rounded" alt="{{ booking.item_details.name }}">
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <h6>{{ booking.item_details.name }}</h6>
+                                                        <p class="text-muted mb-2">
+                                                            <i class="fas fa-clock me-2"></i>{{ booking.item_details.duration }}
+                                                        </p>
+                                                        <p class="mb-2">{{ booking.item_details.description[:200] }}...</p>
+                                                        {% if booking.item_details.destinations %}
+                                                        <div class="mb-2">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-map-marker-alt me-2"></i>
+                                                                {{ booking.item_details.destinations.split(',')[:3]|join(', ') }}
+                                                                {% if booking.item_details.destinations.split(',')|length > 3 %}...{% endif %}
+                                                            </small>
+                                                        </div>
+                                                        {% endif %}
+                                                        <div class="rating">
+                                                            {% for i in range(5) %}
+                                                                <i class="fas fa-star{% if i < booking.item_details.rating|int %}{% else %}-o{% endif %}"></i>
+                                                            {% endfor %}
+                                                            <span class="ms-2">{{ booking.item_details.rating }}/5</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="alert alert-warning">{{ booking.booking_type.title() }} information not available</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6>Timeline</h6>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6>Booking Created</h6>
+                                        <p class="text-muted">{{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                    </div>
+                                </div>
+                                {% if booking.payment_status == 'completed' %}
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6>Payment Completed</h6>
+                                        <p class="text-muted">Payment processed successfully</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content">
+                                        <h6>Check-in</h6>
+                                        <p class="text-muted">{{ booking.check_in_date.strftime('%B %d, %Y') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {% if booking.payment_status == 'pending' %}
+                        <a href="{{ url_for('payment') }}" class="btn btn-primary">
+                            <i class="fas fa-credit-card me-2"></i>Complete Payment
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center" data-aos="fade-up">
+                <div class="card-body py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4>No Bookings Found</h4>
+                    <p class="text-muted">You haven't made any bookings yet.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('hotels') }}" class="btn btn-primary me-3">
+                            <i class="fas fa-bed me-2"></i>Browse Hotels
+                        </a>
+                        <a href="{{ url_for('tours') }}" class="btn btn-success">
+                            <i class="fas fa-map-marked-alt me-2"></i>Explore Tours
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -35px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: -29px;
+        top: 17px;
+        width: 2px;
+        height: calc(100% + 10px);
+        background-color: #e9ecef;
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .timeline-content p {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %} 

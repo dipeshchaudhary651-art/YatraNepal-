@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Tour Packages - YatraNepal{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="section-title" data-aos="fade-up">Amazing Tour Packages</h1>
+            <p class="text-center text-muted mb-5" data-aos="fade-up" data-aos-delay="100">
+                Explore Nepal's beauty with our carefully curated tour packages
+            </p>
+        </div>
+    </div>
+    
+    <!-- Currency Selector -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="currency-selector d-inline-block" data-aos="fade-up" data-aos-delay="200">
+                <span class="me-3 fw-bold">Currency:</span>
+                <button class="currency-btn active" data-currency="NPR">NPR</button>
+                <button class="currency-btn" data-currency="USD">$</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tours Grid -->
+    <div class="row">
+        {% for tour in tours %}
+        <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+            <div class="card h-100">
+                <img src="{{ tour.image_url or 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                     class="card-img-top" alt="{{ tour.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ tour.name }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-clock me-2"></i>{{ tour.duration }}
+                    </p>
+                    <p class="card-text">{{ tour.description[:100] }}...</p>
+                    
+                    <div class="rating mb-3">
+                        {% for i in range(5) %}
+                            <i class="fas fa-star{% if i < tour.rating|int %}{% else %}-o{% endif %}"></i>
+                        {% endfor %}
+                        <span class="ms-2">{{ tour.rating }}/5</span>
+                    </div>
+                    
+                    {% if tour.destinations %}
+                    <div class="destinations mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {{ tour.destinations.split(',')[:3]|join(', ') }}
+                            {% if tour.destinations.split(',')|length > 3 %}...{% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="price mb-3">
+                        <span class="price-display" data-currency="NPR">
+                            <strong>NPR {{ "%.0f"|format(tour.price_nrp) }}</strong>
+                        </span>
+                        <span class="price-display" data-currency="USD" style="display: none;">
+                            <strong>${{ "%.0f"|format(tour.price_usd) }}</strong>
+                        </span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('tour_detail', tour_id=tour.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle me-2"></i>View Details
+                        </a>
+                        
+                        {% if tour.id in user_bookings %}
+                            {% set booking = user_bookings[tour.id] %}
+                            {% if booking.payment_status == 'completed' %}
+                                <button class="btn btn-success" disabled>
+                                    <i class="fas fa-check me-2"></i>Booked
+                                </button>
+                            {% else %}
+                                <button class="btn btn-warning" disabled>
+                                    <i class="fas fa-clock me-2"></i>Pending Payment
+                                </button>
+                            {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('book', type='tour', item_id=tour.id) }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-check me-2"></i>Book Now
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

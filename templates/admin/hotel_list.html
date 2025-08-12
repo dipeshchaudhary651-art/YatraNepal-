@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Hotel Listings{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">All Hotels</h2>
+    
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Price (NPR)</th>
+                <th>Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hotel in hotels %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ hotel.name }}</td>
+                <td>{{ hotel.location }}</td>
+                <td>NPR {{ hotel.price_nrp }}</td>
+                <td>{{ hotel.rating }}</td>
+                <td>
+                    <a href="{{ url_for('edit_hotel', id=hotel.id) }}" class="btn btn-sm btn-primary me-2">
+                      <i class="fas fa-edit"></i> Edit
+                    </a>
+                  
+                    <form action="{{ url_for('delete_hotel', id=hotel.id) }}" method="POST" style="display: inline-block;">
+                      <button type="submit" 
+                              class="btn btn-sm btn-danger d-flex align-items-center" 
+                              style="padding: 0.25rem 0.5rem; font-size: 0.85rem; border-radius: 0.25rem;" 
+                              onclick="return confirm('Delete this hotel?');">
+                        <i class="fas fa-trash me-1"></i> Delete
+                      </button>
+                    </form>
+                  </td>
+                  
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+</div>
+{% endblock %}

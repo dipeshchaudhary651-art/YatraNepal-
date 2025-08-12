@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ type.title() }} - YatraNepal{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-lg" data-aos="fade-up">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <h2 class="card-title">Book Your {{ type.title() }}</h2>
+            <p class="text-muted">Complete your booking details below</p>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <img src="{{ item.image_url or
+'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}"
+                   class="img-fluid rounded" alt="{{ item.name }}">
+            </div>
+            <div class="col-md-6">
+              <h5>{{ item.name }}</h5>
+              <p class="text-muted">
+                {% if type == 'hotel' %}
+                  <i class="fas fa-map-marker-alt me-2"></i>{{ item.location }}
+                {% else %}
+                  <i class="fas fa-clock me-2"></i>{{ item.duration }}
+                {% endif %}
+              </p>
+              <div class="rating mb-3">
+                {% for i in range(5) %}
+                  <i class="fas fa-star{% if i < item.rating|int %}{% else %}-o{% endif %}"></i>
+                {% endfor %}
+                <span class="ms-2">{{ item.rating }}/5</span>
+              </div>
+            </div>
+          </div>
+
+          <form id="bookingForm" method="POST">
+            <!-- Dates & Guests -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="check_in" class="form-label">
+                  {% if type == 'hotel' %}Check‑in Date{% else %}Start Date{% endif %}
+                </label>
+                <input type="date" class="form-control" id="check_in" name="check_in" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="check_out" class="form-label">
+                  {% if type == 'hotel' %}Check‑out Date{% else %}End Date{% endif %}
+                </label>
+                <input type="date" class="form-control" id="check_out" name="check_out" required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="guests" class="form-label">Number of Guests</label>
+                <select class="form-select" id="guests" name="guests" required>
+                  <option value="">Select guests</option>
+                  <option value="1">1 Guest</option>
+                  <option value="2">2 Guests</option>
+                  <option value="3">3 Guests</option>
+                  <option value="4">4 Guests</option>
+                  <option value="5">5+ Guests</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Currency</label>
+                <div class="currency-selector">
+                  <button type="button" class="currency-btn active btn btn-outline-primary me-2"
+                          data-currency="NPR">NPR</button>
+                  <button type="button" class="currency-btn btn btn-outline-primary"
+                          data-currency="USD">$</button>
+                </div>
+                <input type="hidden" name="currency" id="selectedCurrency" value="NPR">
+              </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="card bg-light mb-4">
+              <div class="card-body">
+                <h6 class="card-title">Price Summary</h6>
+                <div class="row">
+                  <div class="col-6">Price per {% if type=='hotel' %}night{% else %}person{% endif %}:</div>
+                  <div class="col-6 text-end">
+                    <span data-currency="NPR" class="price-display">NPR {{ "%.0f"|format(item.price_nrp) }}</span>
+                    <span data-currency="USD" class="price-display" style="display:none;">
+                      ${{ "%.0f"|format(item.price_usd) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">Number of guests:</div>
+                  <div class="col-6 text-end"><span id="guestCount">1</span></div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-6"><strong>Total Amount:</strong></div>
+                  <div class="col-6 text-end">
+                    <strong>
+                      <span id="totalAmountNPR" data-currency="NPR" class="price-display">
+                        NPR {{ "%.0f"|format(item.price_nrp) }}
+                      </span>
+                      <span id="totalAmountUSD" data-currency="USD" class="price-display" style="display:none;">
+                        ${{ "%.0f"|format(item.price_usd) }}
+                      </span>
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-check me-2"></i>Book Now
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const checkIn = document.getElementById('check_in');
+  const checkOut = document.getElementById('check_out');
+  const guests = document.getElementById('guests');
+  const guestCount = document.getElementById('guestCount');
+  const selectedCurrency = document.getElementById('selectedCurrency');
+
+  // Set tomorrow as min check-in
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+  checkIn.min = today.toISOString().split('T')[0];
+
+  checkIn.addEventListener('change', updateAll);
+  checkOut.addEventListener('change', updateAll);
+  guests.addEventListener('change', updateAll);
+
+  // Currency toggle
+  document.querySelectorAll('.currency-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedCurrency.value = btn.dataset.currency;
+      document.querySelectorAll('.price-display').forEach(el => el.style.display='none');
+      document.querySelectorAll(`[data-currency="${btn.dataset.currency}"]`)
+              .forEach(el=>el.style.display='inline');
+      updateAll();
+    });
+  });
+
+  function updateAll() {
+    // sync guest count display
+    guestCount.textContent = guests.value || '1';
+
+    // ensure check-out >= check-in+1
+    if (checkIn.value) {
+      const inDate = new Date(checkIn.value),
+            minOut = new Date(inDate);
+      minOut.setDate(minOut.getDate()+1);
+      checkOut.min = minOut.toISOString().split('T')[0];
+      if (checkOut.value && new Date(checkOut.value) <= inDate) {
+        checkOut.value = minOut.toISOString().split('T')[0];
+      }
+    }
+
+    // compute nights
+    let nights = 1;
+    if (checkIn.value && checkOut.value) {
+      nights = (new Date(checkOut.value) - new Date(checkIn.value))/(1000*3600*24);
+      if (nights<1) nights=1;
+    }
+
+    const currency = selectedCurrency.value;
+    const price = currency==='NPR'? {{ item.price_nrp }} : {{ item.price_usd }};
+    const numGuests = parseInt(guests.value)||1;
+    let total = ( "{{ type }}" === 'hotel' )
+                      ? price * numGuests * nights
+                      : price * numGuests;
+
+    // update displays
+    document.getElementById('totalAmountNPR').textContent = 'NPR ' + total.toFixed(0);
+    document.getElementById('totalAmountUSD').textContent = '$'   + total.toFixed(0);
+  }
+
+  // initial
+  updateAll();
+});
+</script>
+{% endblock %}

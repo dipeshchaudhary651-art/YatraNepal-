@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}YatraNepal - Explore the Beauty of Nepal{% endblock %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS Bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block content %}
+<style>
+    a.btn {
+        position: relative;
+        z-index: 9999;
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="container">
+        <div class="hero-content" data-aos="fade-up">
+            <h1 class="hero-title">Discover Nepal's Magic</h1>
+            <p class="hero-subtitle">Experience the perfect blend of adventure, culture, and natural beauty</p>
+            <h4 class="text-center mt-5 mb-3 fw-semibold">Ready to explore Nepal?</h4>
+            <div style="position: relative; z-index: 1000; pointer-events: auto;" class="d-flex justify-content-center flex-wrap gap-3 mt-4">
+                <a href="/hotels" class="btn btn-primary btn-lg px-4">
+                    <i class="fas fa-bed me-2"></i>Book Hotels
+                </a>
+                <a href="/tours" class="btn btn-success btn-lg px-4">
+                    <i class="fas fa-map-marked-alt me-2"></i>Explore Tours
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<!-- Animated Destinations Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Popular Destinations</h2>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card destination-card">
+                    <div class="destination-image">
+                        <img src="https://cdn.britannica.com/17/83817-050-67C814CD/Mount-Everest.jpg" 
+                             alt="Mount Everest" class="card-img-top">
+                        <div class="destination-overlay">
+                            <h5>Mount Everest</h5>
+                            <p>World's highest peak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card destination-card">
+                    <div class="destination-image">
+                        <img src="https://www.acethehimalaya.com/wp-content/uploads/2024/02/things-to-do-in-pokhara.jpg.webp" 
+                             alt="Pokhara" class="card-img-top">
+                        <div class="destination-overlay">
+                            <h5>Pokhara</h5>
+                            <p>City of lakes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card destination-card">
+                    <div class="destination-image">
+                        <img src="https://c8.alamy.com/comp/2TBC4MB/aerial-view-of-the-city-of-kathmandu-nepal-2TBC4MB.jpg" 
+                             alt="Kathmandu" class="card-img-top">
+                        <div class="destination-overlay">
+                            <h5>Kathmandu</h5>
+                            <p>Ancient capital</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="card destination-card">
+                    <div class="destination-image">
+                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                             alt="Chitwan" class="card-img-top">
+                        <div class="destination-overlay">
+                            <h5>Chitwan</h5>
+                            <p>Wildlife sanctuary</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Hotels Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Featured Hotels</h2>
+        <div class="row">
+            {% for hotel in hotels %}
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100">
+                    <img src="{{ hotel.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                         class="card-img-top" alt="{{ hotel.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hotel.name }}</h5>
+                        <p class="card-text text-muted">{{ hotel.location }}</p>
+                        <div class="rating mb-2">
+                            {% for i in range(5) %}
+                                <i class="fas fa-star{% if i < hotel.rating|int %}{% else %}-o{% endif %}"></i>
+                            {% endfor %}
+                            <span class="ms-2">{{ hotel.rating }}/5</span>
+                        </div>
+                        <div class="price mb-3">
+                            <span class="price-display" data-currency="NPR">NPR {{ "%.0f"|format(hotel.price_nrp) }}</span>
+                            <span class="price-display" data-currency="USD" style="display: none;">${{ "%.0f"|format(hotel.price_usd) }}</span>
+                        </div>
+
+                        <!-- Modal trigger button -->
+                        <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#hotelModal{{ hotel.id }}">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="hotelModal{{ hotel.id }}" tabindex="-1" aria-labelledby="hotelModalLabel{{ hotel.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="hotelModalLabel{{ hotel.id }}">{{ hotel.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <img src="{{ hotel.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" alt="{{ hotel.name }}" class="img-fluid mb-3 rounded">
+                    <p><strong>Location:</strong> {{ hotel.location }}</p>
+                    <p><strong>Description:</strong> {{ hotel.description or "No description available." }}</p>
+                    <p><strong>Rating:</strong> 
+                      {% for i in range(5) %}
+                        <i class="fas fa-star{% if i < hotel.rating|int %}{% else %}-o{% endif %}"></i>
+                      {% endfor %}
+                      ({{ hotel.rating }}/5)
+                    </p>
+                    <p><strong>Price:</strong> NPR {{ "%.0f"|format(hotel.price_nrp) }} / USD ${{ "%.0f"|format(hotel.price_usd) }}</p>
+                    {% if hotel.amenities %}
+                    <p><strong>Amenities:</strong> {{ hotel.amenities }}</p>
+                    {% endif %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('hotels') }}" class="btn btn-secondary btn-lg">
+                View All Hotels <i class="fas fa-arrow-right me-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- Featured Tours Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Popular Tour Packages</h2>
+        <div class="row">
+            {% for tour in tours %}
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100">
+                    <img src="{{ tour.image_url or 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                         class="card-img-top" alt="{{ tour.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tour.name }}</h5>
+                        <p class="card-text text-muted">{{ tour.duration }}</p>
+                        <div class="rating mb-2">
+                            {% for i in range(5) %}
+                                <i class="fas fa-star{% if i < tour.rating|int %}{% else %}-o{% endif %}"></i>
+                            {% endfor %}
+                            <span class="ms-2">{{ tour.rating }}/5</span>
+                        </div>
+                        <div class="price mb-3">
+                            <span class="price-display" data-currency="NPR">NPR {{ "%.0f"|format(tour.price_nrp) }}</span>
+                            <span class="price-display" data-currency="USD" style="display: none;">${{ "%.0f"|format(tour.price_usd) }}</span>
+                        </div>
+                        <a href="{{ url_for('tour_detail', tour_id=tour.id) }}" class="btn btn-primary w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('tours') }}" class="btn btn-secondary btn-lg">
+                View All Tours <i class="fas fa-arrow-right me-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Why Choose YatraNepal?</h2>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                    </div>
+                    <h5>Safe & Secure</h5>
+                    <p class="text-muted">Your safety and security are our top priorities</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-dollar-sign fa-3x text-success"></i>
+                    </div>
+                    <h5>Best Prices</h5>
+                    <p class="text-muted">Competitive prices with no hidden charges</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-headset fa-3x text-warning"></i>
+                    </div>
+                    <h5>24/7 Support</h5>
+                    <p class="text-muted">Round the clock customer support</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-globe fa-3x text-info"></i>
+                    </div>
+                    <h5>Local Experience</h5>
+                    <p class="text-muted">Authentic local experiences and guides</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">What Our Travelers Say</h2>
+        <div class="row">
+            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card testimonial-card">
+                    <div class="card-body text-center">
+                        <div class="testimonial-avatar mb-3">
+                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                        </div>
+                        <p class="card-text">"Amazing experience with YatraNepal! The Everest Base Camp trek was perfectly organized and the guides were excellent."</p>
+                        <h6 class="card-title">Sarah Johnson</h6>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card testimonial-card">
+                    <div class="card-body text-center">
+                        <div class="testimonial-avatar mb-3">
+                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                        </div>
+                        <p class="card-text">"The cultural tour of Kathmandu was incredible. Our guide was knowledgeable and the hotels were top-notch."</p>
+                        <h6 class="card-title">Michael Chen</h6>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card testimonial-card">
+                    <div class="card-body text-center">
+                        <div class="testimonial-avatar mb-3">
+                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                        </div>
+                        <p class="card-text">"Pokhara was breathtaking! The hotel booking was seamless and the lake view was spectacular."</p>
+                        <h6 class="card-title">Emma Davis</h6>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .destination-card {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .destination-image {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .destination-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        color: white;
+        padding: 20px;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .destination-card:hover .destination-overlay {
+        transform: translateY(0);
+    }
+    
+    .destination-card:hover .card-img-top {
+        transform: scale(1.1);
+    }
+    
+    .testimonial-card {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-icon:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+    // Auto-rotate destinations
+    document.addEventListener('DOMContentLoaded', function() {
+        const destinationCards = document.querySelectorAll('.destination-card');
+        
+        destinationCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.5}s`;
+            card.classList.add('animate-pulse');
+        });
+    });
+</script>
+{% endblock %} 

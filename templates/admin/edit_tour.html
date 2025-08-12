@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Edit Tour - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg" data-aos="fade-up">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="card-title">Edit Tour Package</h2>
+                        <p class="text-muted">Update the tour package details</p>
+                    </div>
+                    
+                    <form method="POST" enctype="multipart/form-data" id="editTourForm" class="p-4 border rounded shadow bg-light">
+                        <h4 class="mb-4">Edit Tour Package</h4>
+                    
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Tour Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required
+                                       value="{{ tour.name }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="duration" class="form-label">Duration *</label>
+                                <input type="text" class="form-control" id="duration" name="duration" required
+                                       value="{{ tour.duration }}" placeholder="e.g., 3 Days 2 Nights">
+                            </div>
+                        </div>
+                    
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required
+                                      placeholder="Describe the tour, highlights, and what makes it special...">{{ tour.description }}</textarea>
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price_nrp" class="form-label">Price (NPR) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NPR</span>
+                                    <input type="number" class="form-control" id="price_nrp" name="price_nrp"
+                                           min="0" step="0.01" required value="{{ tour.price_nrp }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="price_usd" class="form-label">Price (USD) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">USD</span>
+                                    <input type="number" class="form-control" id="price_usd" name="price_usd"
+                                           min="0" step="0.01" required value="{{ tour.price_usd }}">
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Tour Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            {% if tour.image_url %}
+                                <small class="form-text text-muted mt-1">
+                                    Current Image: <a href="{{ tour.image_url }}" target="_blank">View</a>
+                                </small>
+                            {% endif %}
+                            <div class="form-text">Upload a new image to replace the current one (optional)</div>
+                        </div>
+                    
+                        <div class="mb-3">
+                            <label for="destinations" class="form-label">Destinations *</label>
+                            <textarea class="form-control" id="destinations" name="destinations" rows="2" required
+                                      placeholder="Mount Everest, Pokhara, Kathmandu, etc. (separate with commas)">{{ tour.destinations }}</textarea>
+                            <div class="form-text">List destinations separated by commas</div>
+                        </div>
+                    
+                        <div class="mb-4">
+                            <label for="included_services" class="form-label">Included Services</label>
+                            <textarea class="form-control" id="included_services" name="included_services" rows="3"
+                                      placeholder="Accommodation, Meals, Transportation, Guide, etc. (separate with commas)">{{ tour.included_services }}</textarea>
+                            <div class="form-text">List included services separated by commas</div>
+                        </div>
+                    
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Update Tour Package
+                            </button>
+                            <a href="{{ url_for('admin_tour_list') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Tour List
+                            </a>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

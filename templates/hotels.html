@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Hotels - YatraNepal{% endblock %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<!-- Bootstrap JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="section-title" data-aos="fade-up">Discover Amazing Hotels</h1>
+            <p class="text-center text-muted mb-5" data-aos="fade-up" data-aos-delay="100">
+                Experience luxury and comfort in the heart of Nepal
+            </p>
+        </div>
+    </div>
+    
+    <!-- Currency Selector -->
+    <div class="row mb-4">
+        <div class="col-12">
+          <div style="display: inline-block; user-select: none;" data-aos="fade-up" data-aos-delay="200">
+            <span style="font-weight: 700; margin-right: 8px;">Currency:</span>
+            <button 
+              style="border: 1px solid #007bff; background-color: #007bff; color: white; padding: 4px 12px; margin-right: 4px; cursor: pointer; border-radius: 4px; font-weight: 600; transition: background-color 0.3s, color 0.3s;" 
+              class="currency-btn active" data-currency="NPR"
+            >
+              NPR
+            </button>
+            <button 
+              style="border: 1px solid #007bff; background-color: white; color: #007bff; padding: 4px 12px; margin-right: 4px; cursor: pointer; border-radius: 4px; font-weight: 600; transition: background-color 0.3s, color 0.3s;" 
+              class="currency-btn" data-currency="USD"
+            >
+              $
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <script>
+      document.querySelectorAll('.currency-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          // Reset all buttons to inactive style
+          document.querySelectorAll('.currency-btn').forEach(btn => {
+            btn.style.backgroundColor = 'white';
+            btn.style.color = '#007bff';
+          });
+          // Set clicked button active style
+          button.style.backgroundColor = '#007bff';
+          button.style.color = 'white';
+      
+          const selectedCurrency = button.getAttribute('data-currency');
+          console.log('Selected currency:', selectedCurrency);
+          // Add your currency switch logic here
+        });
+      });
+      </script>
+      
+    
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="locationFilter" class="form-label">Location</label>
+                            <select class="form-select" id="locationFilter">
+                                <option value="">All Locations</option>
+                                <option value="Kathmandu">Kathmandu</option>
+                                <option value="Pokhara">Pokhara</option>
+                                <option value="Chitwan">Chitwan</option>
+                                <option value="Lumbini">Lumbini</option>
+                                <option value="Bhaktapur">Bhaktapur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="priceFilter" class="form-label">Price Range</label>
+                            <select class="form-select" id="priceFilter">
+                                <option value="">All Prices</option>
+                                <option value="budget">Budget (Under NPR 5000)</option>
+                                <option value="mid">Mid-Range (NPR 5000-15000)</option>
+                                <option value="luxury">Luxury (Above NPR 15000)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="ratingFilter" class="form-label">Rating</label>
+                            <select class="form-select" id="ratingFilter">
+                                <option value="">All Ratings</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hotels Grid -->
+    <div class="row" id="hotelsGrid">
+        {% for hotel in hotels %}
+        <div class="col-lg-4 col-md-6 mb-4 hotel-card" 
+        data-location="{{ hotel.location }}" 
+        data-price-nrp="{{ hotel.price_nrp }}" 
+        data-price-usd="{{ hotel.price_usd }}"
+        data-rating="{{ hotel.rating }}"
+        data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+       <div class="card h-100">
+           <div class="position-relative">
+               <img src="{{ hotel.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80' }}" 
+                    class="card-img-top" alt="{{ hotel.name }}">
+               <div class="position-absolute top-0 end-0 m-2">
+                   <span class="badge bg-primary">{{ hotel.location }}</span>
+               </div>
+           </div>
+           <div class="card-body">
+               <h5 class="card-title">{{ hotel.name }}</h5>
+               <p class="card-text text-muted">
+                   <i class="fas fa-map-marker-alt me-2"></i>{{ hotel.location }}
+               </p>
+               <p class="card-text">{{ hotel.description[:100] }}...</p>
+               
+               <div class="rating mb-3">
+                   {% for i in range(5) %}
+                       <i class="fas fa-star{% if i <hotel.rating|int %}{% else %}-o{% endif %}"></i>
+                   {% endfor %}
+                   <span class="ms-2">{{ hotel.rating }}/5</span>
+               </div>
+               
+               {% if hotel.amenities %}
+               <div class="amenities mb-3">
+                   <small class="text-muted">
+                       <i class="fas fa-concierge-bell me-2"></i>
+                       {{ hotel.amenities.split(',')[:3]|join(', ') }}
+                       {% if hotel.amenities.split(',')|length > 3 %}...{% endif %}
+                   </small>
+               </div>
+               {% endif %}
+               
+               <div class="price mb-3">
+                   <span class="price-display" data-currency="NPR">
+                       <strong>NPR {{ "%.0f"|format(hotel.price_nrp) }}</strong> / night
+                   </span>
+                   <span class="price-display" data-currency="USD" style="display: none;">
+                       <strong>${{ "%.0f"|format(hotel.price_usd) }}</strong> / night
+                   </span>
+               </div>
+               
+               <div class="d-grid gap-2">
+                   <!-- Trigger modal -->
+                   <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#hotelModal{{ hotel.id }}">
+                       <i class="fas fa-info-circle me-2"></i>View Details
+                   </button>
+                   
+                   {% if hotel.id in user_bookings %}
+                       {% set booking = user_bookings[hotel.id] %}
+                       {% if booking.payment_status == 'completed' %}
+                           <button class="btn btn-success" disabled>
+                               <i class="fas fa-check me-2"></i>Booked
+                           </button>
+                       {% else %}
+                           <button class="btn btn-warning" disabled>
+                               <i class="fas fa-clock me-2"></i>Pending Payment
+                           </button>
+                       {% endif %}
+                   {% else %}
+                   <a href="{{ url_for('book', type='hotel', item_id=hotel.id) }}" class="btn btn-primary">
+                       <i class="fas fa-calendar-check me-2"></i>Book Now
+                   </a>
+                   {% endif %}
+               </div>
+           </div>
+       </div>
+   </div>
+   
+   <!-- Modal -->
+   <div class="modal fade" id="hotelModal{{ hotel.id }}" tabindex="-1" aria-labelledby="hotelModalLabel{{ hotel.id }}" aria-hidden="true">
+     <div class="modal-dialog modal-lg modal-dialog-centered">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h5 class="modal-title" id="hotelModalLabel{{ hotel.id }}">{{ hotel.name }} - Details</h5>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+           <img src="{{ hotel.image_url or 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" alt="{{ hotel.name }}" class="img-fluid mb-3">
+           <p><strong>Location:</strong> {{ hotel.location }}</p>
+           <p><strong>Description:</strong> {{ hotel.description }}</p>
+           <p><strong>Amenities:</strong> {{ hotel.amenities or 'N/A' }}</p>
+           <p>
+             <strong>Price:</strong> 
+             NPR {{ "%.0f"|format(hotel.price_nrp) }} / night |
+             ${{ "%.0f"|format(hotel.price_usd) }} / night
+           </p>
+           <p>
+             <strong>Rating:</strong> 
+             {% for i in range(5) %}
+               <i class="fas fa-star{% if i <hotel.rating|int %}{% else %}-o{% endif %}"></i>
+             {% endfor %}
+             ({{ hotel.rating }}/5)
+           </p>
+         </div>
+         <div class="modal-footer">
+            <a href="{{ url_for('book', type='hotel', item_id=hotel.id) }}" class="btn btn-primary">
+              <i class="fas fa-calendar-check me-2"></i>Book Now
+            </a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+          
+       </div>
+     </div>
+   </div>
+   
+        {% endfor %}
+    </div>
+    
+    <!-- No Results Message -->
+    <div class="row" id="noResults" style="display: none;">
+        <div class="col-12 text-center">
+            <div class="card">
+                <div class="card-body py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>No hotels found</h4>
+                    <p class="text-muted">Try adjusting your filters to find more options.</p>
+                    <button class="btn btn-primary" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function applyFilters() {
+        const locationFilter = document.getElementById('locationFilter').value;
+        const priceFilter = document.getElementById('priceFilter').value;
+        const ratingFilter = document.getElementById('ratingFilter').value;
+        const currentCurrency = document.querySelector('.currency-btn.active').dataset.currency;
+        
+        const hotelCards = document.querySelectorAll('.hotel-card');
+        let visibleCount = 0;
+        
+        hotelCards.forEach(card => {
+            const location = card.dataset.location;
+            const priceNrp = parseFloat(card.dataset.priceNrp);
+            const priceUsd = parseFloat(card.dataset.priceUsd);
+            const rating = parseFloat(card.dataset.rating);
+            
+            let show = true;
+            
+            // Location filter
+            if (locationFilter && location !== locationFilter) {
+                show = false;
+            }
+            
+            // Price filter
+            if (priceFilter) {
+                const price = currentCurrency === 'NPR' ? priceNrp : priceUsd;
+                if (priceFilter === 'budget' && price >= 5000) show = false;
+                if (priceFilter === 'mid' && (price < 5000 || price > 15000)) show = false;
+                if (priceFilter === 'luxury' && price <= 15000) show = false;
+            }
+            
+            // Rating filter
+            if (ratingFilter && rating < parseFloat(ratingFilter)) {
+                show = false;
+            }
+            
+            if (show) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResults = document.getElementById('noResults');
+        if (visibleCount === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    function clearFilters() {
+        document.getElementById('locationFilter').value = '';
+        document.getElementById('priceFilter').value = '';
+        document.getElementById('ratingFilter').value = '';
+        
+        const hotelCards = document.querySelectorAll('.hotel-card');
+        hotelCards.forEach(card => {
+            card.style.display = 'block';
+        });
+        
+        document.getElementById('noResults').style.display = 'none';
+    }
+    
+    // Currency switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const currencyBtns = document.querySelectorAll('.currency-btn');
+        
+        currencyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                currencyBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const currency = this.dataset.currency;
+                const priceElements = document.querySelectorAll(`[data-currency="${currency}"]`);
+                
+                document.querySelectorAll('.price-display').forEach(el => el.style.display = 'none');
+                priceElements.forEach(el => el.style.display = 'block');
+            });
+        });
+    });
+</script>
+{% endblock %} 

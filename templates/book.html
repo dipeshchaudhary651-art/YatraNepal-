@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Book {{ booking_type|capitalize }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Book {{ booking_type|capitalize }}</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="check_in" class="form-label">Check-in Date</label>
+            <input type="date" id="check_in" name="check_in" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label for="check_out" class="form-label">Check-out Date</label>
+            <input type="date" id="check_out" name="check_out" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label for="guests" class="form-label">Number of Guests</label>
+            <input type="number" id="guests" name="guests" class="form-control" min="1" value="1" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Book Now</button>
+    </form>
+</div>
+{% endblock %}
